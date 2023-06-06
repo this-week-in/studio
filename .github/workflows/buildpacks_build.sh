@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-export IMAGE_NAME=gcr.io/${GCLOUD_PROJECT}/${APP_NAME}
+export IMAGE_NAME=gcr.io/${GCLOUD_PROJECT}/twi-${APP_NAME}
 export ROOT_DIR=${GITHUB_WORKSPACE}
 
 cd $GITHUB_WORKSPACE
