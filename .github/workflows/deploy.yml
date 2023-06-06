@@ -1,7 +1,7 @@
 name: Deploy
 
 env:
-  APP_NAME: studio-site
+  APP_NAME: studio
   GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
   GCLOUD_ZONE: ${{ secrets.GCLOUD_ZONE }}
   NS_NAME: ${{ secrets.NS_NAME }}
