@@ -1,0 +1,53 @@
+name: Deploy
+
+env:
+  APP_NAME: studio-site
+  GKE_CLUSTER: ${{ secrets.GKE_CLUSTER }}
+  GCLOUD_ZONE: ${{ secrets.GCLOUD_ZONE }}
+  NS_NAME: ${{ secrets.NS_NAME }}
+  GCLOUD_SA_KEY: ${{ secrets.GCLOUD_SA_KEY }}
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+
+      - uses: actions/checkout@v3
+
+      - uses: actions/cache@v3
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-maven-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-maven-
+
+
+      - uses: 'google-github-actions/auth@v0'
+        with:
+          credentials_json: '${{ secrets.GCLOUD_SA_KEY }}'
+
+      - id: 'get-credentials'
+        uses: 'google-github-actions/get-gke-credentials@v1'
+        with:
+          cluster_name: '${{ env.GKE_CLUSTER  }}'
+          location: '${{ env.GCLOUD_ZONE }}'
+
+      - run: |
+          gcloud config set project $GCLOUD_PROJECT 
+          gcloud --quiet auth configure-docker
+          kubectl get pods
+
+      
+      - run: |
+          cd $GITHUB_WORKSPACE
+          mkdir -p $GITHUB_WORKSPACE/bin/
+          export PATH=$GITHUB_WORKSPACE/bin/:$PATH
+          (curl -sSL "https://github.com/buildpacks/pack/releases/download/v0.29.0/pack-v0.29.0-linux.tgz" | sudo tar -C  $GITHUB_WORKSPACE/bin/ --no-same-owner -xzv pack)
+          cd $GITHUB_WORKSPACE  
+          $GITHUB_WORKSPACE/.github/workflows/buildpacks_build.sh
